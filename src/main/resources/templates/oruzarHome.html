@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>AOM Oruzarstvo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/main.css" th:href="@{/css/main.css}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <nav class="nav nav-justified align-items-center bg-white" >
+            <a class="nav-link active" aria-current="page" th:href="@{/oruzar/zaduzenja}">Dodaj ili ukloni zaduženje</a>
+            <img th:src="@{/images/matica_bez_natpisa.png}" class="img-logo" alt="alpinist">
+            <a class="nav-link" th:href="@{/oruzar/popis}" tabindex="-1">Popis opreme</a>
+        </nav>
+    </div>
+    <div class="row row-bottom justify-content-end bg-white">
+        <div class="col-2 text-end ">
+            <a class="btn btn-dark row-bottom" th:href="@{/logout}">Odjavi me</a>
+        </div>
+    </div>
+    <div class="row row-bottom bg-white">
+        <table class="table table-hover table-dark table-striped">
+            <thead>
+            <tr>
+                <th scope="col">Ime</th>
+                <th scope="col">Prezime</th>
+                <th scope="col">Datum povrata</th>
+                <th scope="col">Pregled i otkaz</th>
+            </tr>
+            </thead>
+            <tbody>
+            <div th:each="posudba : ${prikazPosudbi}">
+                <tr>
+                    <td th:text="${posudba.ime}">Ivan</td>
+                    <td th:text="${posudba.prezime}">Sabolic</td>
+                    <td th:text="${#dates.format(posudba.datumPovrata, 'dd-MM-yyyy')}">01/01/2021</td>
+                    <td>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" th:data-bs-target="${'#' + posudba.ime + posudba.prezime + #dates.format(posudba.datumPovrata, 'dd-MM-yyyy')}">
+                            Pregledaj i/ili otkaži
+                        </button>
+                    </td>
+                </tr>
+                <div class="modal fade" th:id="${posudba.ime + posudba.prezime + #dates.format(posudba.datumPovrata, 'dd-MM-yyyy')}" tabindex="-1" th:aria-labelledby="${posudba.ime + posudba.prezime + posudba.datumPovrata} + 'label'" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" th:id="${posudba.ime + posudba.prezime + posudba.datumPovrata} + 'label'">Sažetak posudbe</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <ul class="list-group">
+                                    <li th:each="oprema : ${posudba.posudenaOprema}" class="list-group-item">
+                                        <span th:text="${oprema.key}"></span>
+                                        <span class="badge bg-primary rounded-pill" th:text="${oprema.value}">1</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+                                <form th:action="@{/oruzar/otkazi}" method="post" th:object="${otkaz}">
+                                    <input type="text" name="username" id="username" th:value="${posudba.username}" hidden>
+                                    <input type="text" name="datumpovrata" id="datumpovrata" th:value="${posudba.datumPovrata}" hidden>
+                                    <button type="submit" class="btn btn-danger">Otkaži</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </tbody>
+        </table>
+    </div>
+    <div class="row bg-white">
+        <form action="#" th:action="@{/oruzar/zaduzi}" th:object="${zaduzenje}" method="post">
+            <div class="row">
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#zaduziModal" id="zaduzi">
+                    Zaduži
+                </button>
+            </div>
+
+            <br>
+
+            <div class="row" >
+                <label for="alpinistDataList" class="form-label">Alpinist:</label>
+                <input class="form-control" list="alpinistDataListOptions" id="alpinistDataList" th:field="*{username}" placeholder="Kreni pisati..." required>
+                <datalist id="alpinistDataListOptions">
+                    <option th:each="osoba : ${osobe}" th:value="${osoba.ime + ' ' + osoba.prezime}">
+                </datalist>
+            </div>
+            <br>
+
+            <div class="row">
+                <label for="traziOpremu" class="form-label">Unesi komad:</label>
+                <input class="form-control" type="text" id="traziOpremu" onkeyup="pretrazi()" placeholder="Pretrazi">
+
+                <table class="table table striped">
+                    <tr th:each="oprema : ${opremaList}">
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" th:field="*{opremaC}" th:value="${oprema.sifra}" id="${oprema.sifra}">
+                            </div>
+                        </td>
+
+                        <td th:text="${oprema.sifra}" hidden></td>
+                        <td th:text="${oprema.grupa_opreme}"></td>
+                        <td th:text="${oprema.proizvodac}"></td>
+                        <td th:text="${oprema.model}"></td>
+                        <td th:text="${oprema.naziv}"></td>
+                        <td class="badge rounded-pill bg-info text-dark" th:text="${oprema.kolicina}"></td>
+
+                        <td>
+                            <input type="number" class="form-control" th:field="*{kolicina}" style="width: 50px">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="zaduziModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="exampleModalLabel">Sažetak</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <ul class="list-group" id="listaZaduzenja">
+                                <li class="list-group-item active d-flex justify-content-between align-items-center" id="alpinist">
+                                    Nije odabran
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center hide" id="komadOpreme">
+                                    Zeleno uze
+                                    <span id = "pill" class="badge bg-primary rounded-pill">1</span>
+                                </li>
+                            </ul>
+
+                            <label for="povratDatum" class="form-label" style="margin-top: 15px">Povrat (mm-dd-yyyy):</label>
+                            <input type="date" class="form-control" id="povratDatum" th:field="*{datumPovrata}" name="povratDatum">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Odustani</button>
+                            <button type="submit" class="btn btn-success">Zaduži</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script>
+    $( document ).ready(function() {
+        let nInputs = document.querySelectorAll("input[type=number]");
+        for(let nInput of nInputs) {
+            nInput.value = 1;
+        }
+    });
+
+    function pretrazi() {
+        let input, filter, trs, txt, table;
+        input = document.getElementById('traziOpremu');
+        filter = input.value.toUpperCase();
+        table = document.getElementsByClassName('table')[1];
+        trs = table.getElementsByTagName('tr');
+
+        const searchStart = 1;
+        const searchEnd = 4;
+
+        for(let i = 0; i < trs.length; i++) {
+
+            trs[i].style.display = "none";
+            for(let j = searchStart; j < searchEnd; j++) {
+                txt = trs[i].getElementsByTagName('td')[j].textContent;
+                if(txt.toUpperCase().indexOf(filter) > -1) {
+                    trs[i].style.display = "";
+                    break;
+                }
+            }
+        }
+    }
+
+    $('#zaduzi').click(function updateModal() {
+        let alpinist = document.getElementById('alpinist');
+        alpinist.innerText = document.getElementById('alpinistDataList').value === "" ? "Nije odabran" : document.getElementById('alpinistDataList').value;
+
+        let listItem = document.getElementById('komadOpreme');
+        let pill = document.getElementById('pill');
+
+        let list = document.getElementById('listaZaduzenja');
+        list.innerHTML = '';
+        list.appendChild(alpinist)
+
+        let table = document.getElementsByClassName('table')[1];
+        let trs = table.getElementsByTagName('tr');
+        for(let i = 0; i < trs.length; i++) {
+            if(trs[i].firstElementChild.firstElementChild.firstElementChild.checked) {
+                let newListItem = listItem.cloneNode(true);
+                newListItem.classList.remove('hide')
+                newListItem.innerText = trs[i].getElementsByTagName('td')[5].innerText;
+                let newPill = pill.cloneNode(true);
+                newPill.innerText = trs[i].lastElementChild.firstElementChild.value;
+                newListItem.appendChild(newPill);
+
+                list.appendChild(newListItem);
+            }
+        }
+
+        let dateInput = document.getElementById('povratDatum');
+        dateInput.valueAsDate = new Date(Date.now() + (31*24*60*60*1000));
+    });
+</script>
+</html>

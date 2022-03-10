@@ -1,0 +1,36 @@
+CREATE TABLE Oprema
+(
+  Ime VARCHAR NOT NULL,
+  ID INT NOT NULL,
+  Godina INT NOT NULL,
+  PRIMARY KEY (ID)
+);
+
+CREATE TABLE Osoba
+(
+  Username VARCHAR(20) NOT NULL,
+  Ime VARCHAR(20) NOT NULL,
+  Prezime VARCHAR(20) NOT NULL,
+  Datum_rodenja DATE,
+  PRIMARY KEY (Username)
+);
+
+CREATE TABLE Racun
+(
+  Lozinka VARCHAR(20) NOT NULL,
+  Username VARCHAR(20) NOT NULL,
+  PRIMARY KEY (Username),
+  FOREIGN KEY (Username) REFERENCES Osoba(Username)
+);
+
+CREATE TABLE Posudba
+(
+  DatumPosudbe DATE NOT NULL,
+  DatumPovratka DATE NOT NULL,
+  IDPosudbe INT NOT NULL,
+  Username VARCHAR(20) NOT NULL,
+  ID INT,
+  PRIMARY KEY (IDPosudbe),
+  FOREIGN KEY (Username) REFERENCES Racun(Username),
+  FOREIGN KEY (ID) REFERENCES Oprema(ID)
+);

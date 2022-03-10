@@ -1,0 +1,16 @@
+body {
+    background-image: url('../images/background.jpg')
+}
+
+.img-logo {
+    width: 150px;
+    height: 100px;
+}
+
+.hide {
+    display: none!important;
+}
+
+.row-bottom {
+    margin-bottom: 10px;
+}

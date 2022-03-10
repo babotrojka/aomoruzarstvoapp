@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>AOM Oruzarstvo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <link rel="stylesheet" href="../static/css/main.css" th:href="@{/css/main.css}">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <nav class="nav nav-justified align-items-center bg-white">
+            <a class="nav-link active" aria-current="page" th:href="@{/oruzar/zaduzenja}">Dodaj ili ukloni zaduženje</a>
+            <img th:src="@{/images/matica_bez_natpisa.png}" class="img-logo" alt="alpinist">
+            <a class="nav-link" th:href="@{/oruzar/popis}" tabindex="-1">Popis opreme</a>
+        </nav>
+    </div>
+    <div class="row row-bottom justify-content-end bg-white">
+        <div class="col-2 text-end ">
+            <a class="btn btn-dark row-bottom" th:href="@{/logout}">Odjavi me</a>
+        </div>
+    </div>
+    <div class="row bg-light" >
+        <div class="mb-3">
+            <label for="pretraziOpremu">Pretraga:</label>
+            <input type="text" class="form-control" id="pretraziOpremu" onkeyup="pretrazi()" placeholder="Pretraži po grupi, proivođaču, modelu, nazivu">
+
+        </div>
+    </div>
+    <div class="row bg-white">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">Šifra</th>
+                <th scope="col">Grupa</th>
+                <th scope="col">Proizvođač</th>
+                <th scope="col">Model</th>
+                <th scope="col">Naziv</th>
+                <th scope="col">JM</th>
+                <th scope="col">Količina</th>
+                <th scope="col">Pobrojano</th>
+                <th scope="col">Napomena</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="oprema : ${opremaList}">
+                <th th:text="${oprema.sifra}" scope="row">C0001</th>
+                <td th:text="${oprema.grupa_opreme}">Pojas</td>
+                <td th:text="${oprema.proizvodac}">Camp</td>
+                <td th:text="${oprema.model}">Miura</td>
+                <td th:text="${oprema.naziv}">Pojas</td>
+                <td th:text="${oprema.jm}">Kom</td>
+                <td th:text="${oprema.kolicina}">1</td>
+                <td th:text="${oprema.pobrojano}">1</td>
+                <td th:text="${oprema.napomena}">Novo</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row bg-light" style="margin: 30px;">
+        <form method="post" th:action="@{/oruzar/ucitajIzExcela}" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="excelDatoteka" class="form-label">Excel datoteka</label>
+                <input class="form-control" type="file" id="excelDatoteka" name="excelDatoteka" required>
+            </div>>
+            <button type="submit" class="btn btn-danger" >Učitaj opremu iz excel tablice (Upozorenje!!! Briše svu trenutno spremljenu opremu)</button>
+        </form>
+    </div>
+</div>
+</body>
+<script>
+    function pretrazi() {
+        let input, filter, trs, txt, table;
+        input = document.getElementById('pretraziOpremu');
+        filter = input.value.toUpperCase();
+        table = document.getElementsByTagName('table')[0];
+        trs = table.getElementsByTagName('tr');
+
+        const searchStart = 0;
+        const searchEnd = 4;
+
+        console.log(filter);
+        for(let i = 0; i < trs.length; i++) {
+            if(!trs[i].getElementsByTagName('td')[0]) continue;
+
+            trs[i].style.display = "none";
+            for(let j = searchStart; j < searchEnd; j++) {
+                txt = trs[i].getElementsByTagName('td')[j].textContent;
+                if(txt.toUpperCase().indexOf(filter) > -1) {
+                    trs[i].style.display = "";
+                    break;
+                }
+            }
+        }
+    }
+</script>
+</html>
